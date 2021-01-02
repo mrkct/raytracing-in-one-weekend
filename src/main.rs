@@ -2,6 +2,7 @@ mod ppm;
 mod vec3;
 mod ray;
 mod hittable;
+mod camera;
 
 use std::fs::File;
 use ppm::PPMImage;
@@ -9,6 +10,10 @@ use vec3::Vec3;
 use ray::Ray;
 use hittable::sphere::Sphere;
 
+
+pub fn clamp(min: f64, x: f64, max: f64) -> f64 {
+    x.min(max).max(min)
+}
 
 
 fn ray_color(ray: &Ray, world: &Vec<impl hittable::Hittable>) -> Vec3 {
@@ -21,36 +26,41 @@ fn ray_color(ray: &Ray, world: &Vec<impl hittable::Hittable>) -> Vec3 {
 }
 
 fn main() {
+    // TODO: ASPECT RATIO is hardcoded inside Camera
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: usize = 400;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-    // Camera stuff
-    let viewport_height = 2.0;
-    let viewport_width = viewport_height * ASPECT_RATIO;
-    let focal_length = 1.0;
-
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0., 0.);
-    let vertical = Vec3::new(0., viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal/2. - vertical/2. - Vec3::with_z(Vec3::ZERO, focal_length);
-
-    // World
+    let camera = camera::Camera::new();
     let world = vec![
         Sphere::new(Vec3::new(0., 0., -1.), 0.5), 
         Sphere::new(Vec3::new(0., -100.5, -1.), 100.)
     ];
 
     let mut image = PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
-    
+
+    let samples_per_pixel = 100;
+    let scale = 1.0 / samples_per_pixel as f64; // faster to multiply by this than dividing by samples_per_pixels
+
     for y in 0..image.height {
         for x in 0..image.width {
             let j = image.height - y;
             
-            let u = x as f64 / (image.width - 1) as f64;
-            let v = j as f64 / (image.height - 1) as f64;
-            let r = Ray::new(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            image.putpixel(x, y, &ray_color(&r, &world));
+            let mut color = Vec3::ZERO;
+
+            for _ in 0..samples_per_pixel {
+                let u = (x as f64 + rand::random::<f64>()) / (image.width - 1) as f64;
+                let v = (j as f64 + rand::random::<f64>()) / (image.height - 1) as f64;
+                let r = camera.get_ray(u, v);
+
+                color += ray_color(&r, &world);
+            }
+            
+            color.x = clamp(0., color.x * scale, 0.9999);
+            color.y = clamp(0., color.y * scale, 0.9999);
+            color.z = clamp(0., color.z * scale, 0.9999);
+            
+            image.putpixel(x, y, &color);
         }
     }
 
