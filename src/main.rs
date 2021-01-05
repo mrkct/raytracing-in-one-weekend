@@ -62,10 +62,10 @@ fn main() {
         material::lambertian::Lambertian::new(Vec3::new(0.7, 0.3, 0.3))
     );
     let material_left = Rc::new(
-        material::metal::Metal::new(Vec3::new(0.8, 0.8, 0.8))
+        material::metal::Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3)
     );
     let material_right = Rc::new(
-        material::metal::Metal::new(Vec3::new(0.8, 0.6, 0.2))
+        material::metal::Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0)
     );
 
     let world = vec![ 
