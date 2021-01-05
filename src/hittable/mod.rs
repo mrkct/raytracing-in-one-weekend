@@ -1,5 +1,6 @@
 use super::ray::Ray;
-use crate::vec3::Vec3;
+use crate::{vec3::Vec3, material::Material};
+use std::rc::Rc;
 
 
 pub mod sphere;
@@ -9,17 +10,19 @@ pub struct HitRecord {
     pub normal: Vec3, 
     pub t: f64, 
 
-    pub front_face: bool
+    pub front_face: bool, 
+    pub material: Rc<dyn Material>
 }
 
 impl HitRecord {
-    pub fn new(ray: &Ray, root: f64, outward_normal: Vec3) -> HitRecord {
+    pub fn new(material: Rc<dyn Material>, ray: &Ray, root: f64, outward_normal: Vec3) -> HitRecord {
         let front_face = Vec3::dot(ray.direction(), &outward_normal) < 0.; 
         HitRecord {
+            material, 
             p: (ray.at(root)),  
             t: root, 
             front_face, 
-            normal: if front_face { outward_normal } else { -outward_normal } 
+            normal: if front_face { outward_normal } else { -outward_normal }
         }
     }
 }

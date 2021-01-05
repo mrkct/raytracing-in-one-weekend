@@ -1,5 +1,3 @@
-#![crate_name = "vec3"]
-
 /**
     From: https://github.com/ryankaplan/vec3
 */
@@ -140,7 +138,39 @@ impl Vec3 {
             y: a.z * b.x - a.x * b.z,
             z: a.x * b.y - a.y * b.x,
         };
-    }
+	}
+	
+	fn random() -> Vec3 {
+		Vec3::new(
+			rand::random(), 
+			rand::random(), 
+			rand::random()
+		)
+	}
+
+	fn random_range(min: f64, max: f64) -> Vec3 {
+		let rand_range = || (min + rand::random::<f64>() * (max - min));
+		Vec3::new(
+			rand_range(), rand_range(), rand_range()
+		)
+	}
+
+	pub fn random_in_unit_sphere() -> Vec3 {
+		// TODO: Actual smart random gen
+		loop {
+			let v = Vec3::random_range(-1., 1.);
+			if v.length_squared() < 1. { return v }
+		}
+	}
+
+	pub fn random_unit_vector() -> Vec3 {
+		Vec3::random_in_unit_sphere().unit_vector()
+	}
+
+  pub fn near_zero(&self) -> bool {
+		const MARGIN: f64 = 1e-8;
+		self.x.abs() < MARGIN && self.y.abs() < MARGIN && self.z.abs() < MARGIN
+  }
 }
 
 // This macro helps us implement math operators on Vector3
@@ -332,6 +362,13 @@ impl_op_assign!(Vec3 DivAssign div_assign /);
 #[cfg(test)]
 mod tests {
     use super::*;
+
+	#[test]
+	fn random_in_unit_sphere() {
+		for _ in 0..100 {
+			assert!(Vec3::random_in_unit_sphere().length_squared() < 1.);
+		}
+	}
 
     #[test]
     fn add() {
