@@ -42,47 +42,82 @@ fn gamma2_color_correction(color: &Vec3) -> Vec3 {
     )
 }
 
+fn cool_picture_world() -> Vec<Sphere> {
+    let mut world = vec![];
+
+    let ground_material = Rc::new(material::lambertian::Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
+    world.push(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0), 
+        1000.0, 
+        ground_material.clone()
+    ));
+
+    let rand_val = |min, max| min + (max - min) * rand::random::<f64>();
+    let rand_vec = |min, max| Vec3::new(rand_val(min, max), rand_val(min, max), rand_val(min, max));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rand_val(-1., 1.);
+            let center = Vec3::new(a as f64 + 0.9 * rand_val(-1., 1.), 0.2, b as f64 + 0.9 * rand_val(-1., 1.));
+
+            if (center - Vec3::new(4.0, 0.2, 0.)).length() > 0.9 {
+                let sphere_material: Rc<dyn material::Material> = {
+                    if choose_mat < 0.8 {
+                        // Diffuse
+                        Rc::from(material::lambertian::Lambertian::new(rand_vec(-1., 1.) * rand_vec(-1., 1.)))
+                    } else if choose_mat < 0.95 {
+                        // Metal
+                        let albedo = rand_vec(0.5, 1.0);
+                        let fuzz = rand_val(0., 0.5);
+                        Rc::from(material::metal::Metal::new(albedo, fuzz))
+                    } else {
+                        // Glass
+                        Rc::from(material::dielectric::Dielectric::new(1.5))
+                    }
+                };
+                world.push(Sphere::new(center, 0.2, sphere_material));
+            }
+        }
+    }
+
+    let mat1 = Rc::new(material::dielectric::Dielectric::new(1.5));
+    world.push(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, mat1));
+
+    let mat2 = Rc::new(material::lambertian::Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
+    world.push(Sphere::new(Vec3::new(-4.0, 1.0, 0.0), 1.0, mat2));
+
+    let mat3 = Rc::new(material::metal::Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
+    world.push(Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, mat3));
+
+    world
+}
+
 fn main() {
     
     const MAX_DEPTH: i32 = 10;
 
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: usize = 400;
+    const ASPECT_RATIO: f64 = 3.0 / 2.0;
+    const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
+    let look_from = Vec3::new(13.0, 2.0, 3.0);
+    let look_at = Vec3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    const VERTICAL_FOV: f64 = 20.0;
+    const APERTURE: f64 = 0.1;
+    let dist_to_focus = 10.0;
+
     let camera = camera::Camera::new(
-        &Vec3::new(-2.0, 2.0, 1.0), 
-        &Vec3::new(0.0, 0.0, -1.0), 
-        &Vec3::new(0.0, 1.0, 0.0),
-        90.0, 
-        ASPECT_RATIO
+        &look_from, &look_at, &vup, 
+        VERTICAL_FOV, ASPECT_RATIO, APERTURE, 
+        dist_to_focus
     );
 
-    let material_ground = Rc::new(
-        material::lambertian::Lambertian::new(Vec3::new(0.8, 0.8, 0.0))
-    );
-    let material_center = Rc::new(
-        material::lambertian::Lambertian::new(Vec3::new(0.1, 0.2, 0.5))
-    );
-    let material_left = Rc::new(
-        material::lambertian::Lambertian::new(Vec3::new(0., 0., 1.0))
-    );
-    let material_right = Rc::new(
-        material::lambertian::Lambertian::new(Vec3::new(1.0, 0., 0.0))
-    );
-
-    let R: f64 = (std::f64::consts::PI / 4.0).cos();
-
-    let world = vec![ 
-        Sphere::new(Vec3::new(0., -100.5, -1.), 100., material_ground.clone()), 
-        //Sphere::new(Vec3::new(0., 0., -1.), 0.5, material_center.clone()), 
-        Sphere::new(Vec3::new(-R, 0., -1.), R, material_left.clone()), 
-        Sphere::new(Vec3::new(R, 0., -1.), R, material_right.clone())
-    ];
+    let world = cool_picture_world();
 
     let mut image = PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    let samples_per_pixel = 40;
+    let samples_per_pixel = 50;
     let scale = 1.0 / samples_per_pixel as f64; // faster to multiply by this than dividing by samples_per_pixels
 
     for y in 0..image.height {
