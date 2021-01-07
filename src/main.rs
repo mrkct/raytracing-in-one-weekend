@@ -46,14 +46,17 @@ fn main() {
     
     const MAX_DEPTH: i32 = 10;
 
-    // TODO: ASPECT RATIO is hardcoded inside Camera
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: usize = 400;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-    
-
-    let camera = camera::Camera::new();
+    let camera = camera::Camera::new(
+        &Vec3::new(-2.0, 2.0, 1.0), 
+        &Vec3::new(0.0, 0.0, -1.0), 
+        &Vec3::new(0.0, 1.0, 0.0),
+        90.0, 
+        ASPECT_RATIO
+    );
 
     let material_ground = Rc::new(
         material::lambertian::Lambertian::new(Vec3::new(0.8, 0.8, 0.0))
@@ -62,17 +65,19 @@ fn main() {
         material::lambertian::Lambertian::new(Vec3::new(0.1, 0.2, 0.5))
     );
     let material_left = Rc::new(
-        material::dielectric::Dielectric::new(-0.4)
+        material::lambertian::Lambertian::new(Vec3::new(0., 0., 1.0))
     );
     let material_right = Rc::new(
-        material::metal::Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.0)
+        material::lambertian::Lambertian::new(Vec3::new(1.0, 0., 0.0))
     );
+
+    let R: f64 = (std::f64::consts::PI / 4.0).cos();
 
     let world = vec![ 
         Sphere::new(Vec3::new(0., -100.5, -1.), 100., material_ground.clone()), 
-        Sphere::new(Vec3::new(0., 0., -1.), 0.5, material_center.clone()), 
-        Sphere::new(Vec3::new(-1.0, 0., -1.), 0.5, material_left.clone()), 
-        Sphere::new(Vec3::new(1.0, 0., -1.), 0.5, material_right.clone())
+        //Sphere::new(Vec3::new(0., 0., -1.), 0.5, material_center.clone()), 
+        Sphere::new(Vec3::new(-R, 0., -1.), R, material_left.clone()), 
+        Sphere::new(Vec3::new(R, 0., -1.), R, material_right.clone())
     ];
 
     let mut image = PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
