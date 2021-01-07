@@ -12,6 +12,8 @@ use ray::Ray;
 use hittable::sphere::Sphere;
 use std::rc::Rc;
 
+use indicatif::{ProgressBar, ProgressStyle};
+
 
 pub fn clamp(min: f64, x: f64, max: f64) -> f64 {
     x.min(max).max(min)
@@ -120,8 +122,14 @@ fn main() {
     let samples_per_pixel = 50;
     let scale = 1.0 / samples_per_pixel as f64; // faster to multiply by this than dividing by samples_per_pixels
 
+    let progressbar = ProgressBar::new(image.height as u64);
+    progressbar.set_style(ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} lines rendered ({eta})")
+        .progress_chars("#>-")
+    );
+
     for y in 0..image.height {
-        println!("{} / {}", y, image.height);
+        progressbar.set_position(y as u64);
         for x in 0..image.width {
             let j = image.height - y;
             
@@ -142,7 +150,9 @@ fn main() {
             image.putpixel(x, y, &gamma2_color_correction(&color));
         }
     }
+    progressbar.finish_with_message("Writing to file...");
 
     let mut out = File::create("image.ppm").expect("Failed to create file");
     image.write(&mut out).expect("Failed to write to stdout");
+    println!("Done!");
 }
