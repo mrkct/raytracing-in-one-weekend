@@ -1,4 +1,5 @@
 pub mod ppm;
+pub mod png;
 
 use std::io::Write;
 

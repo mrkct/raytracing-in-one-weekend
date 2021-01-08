@@ -116,7 +116,7 @@ fn main() {
 
     let world = cool_picture_world();
 
-    let mut image = image_formats::ppm::PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
+    let mut image = image_formats::png::Png::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     let samples_per_pixel = 50;
     let scale = 1.0 / samples_per_pixel as f64; // faster to multiply by this than dividing by samples_per_pixels
@@ -151,7 +151,7 @@ fn main() {
     }
     progressbar.finish_with_message("Writing to file...");
 
-    let mut out = File::create("image.ppm").expect("Failed to create file");
+    let mut out = File::create("image.png").expect("Failed to create file");
     image.write_image_data(&mut out).expect("Failed to write to stdout");
     println!("Done!");
 }
