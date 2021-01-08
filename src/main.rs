@@ -1,4 +1,4 @@
-mod ppm;
+mod image_formats;
 mod vec3;
 mod ray;
 mod hittable;
@@ -6,14 +6,13 @@ mod camera;
 mod material;
 
 use std::fs::File;
-use ppm::PPMImage;
 use vec3::Vec3;
 use ray::Ray;
 use hittable::sphere::Sphere;
 use std::rc::Rc;
 
 use indicatif::{ProgressBar, ProgressStyle};
-
+use image_formats::Image;
 
 pub fn clamp(min: f64, x: f64, max: f64) -> f64 {
     x.min(max).max(min)
@@ -99,7 +98,7 @@ fn main() {
     const MAX_DEPTH: i32 = 10;
 
     const ASPECT_RATIO: f64 = 3.0 / 2.0;
-    const IMAGE_WIDTH: usize = 600;
+    const IMAGE_WIDTH: usize = 300;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
     let look_from = Vec3::new(13.0, 2.0, 3.0);
@@ -117,27 +116,27 @@ fn main() {
 
     let world = cool_picture_world();
 
-    let mut image = PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
+    let mut image = image_formats::ppm::PPMImage::new(IMAGE_WIDTH, IMAGE_HEIGHT);
 
     let samples_per_pixel = 50;
     let scale = 1.0 / samples_per_pixel as f64; // faster to multiply by this than dividing by samples_per_pixels
 
-    let progressbar = ProgressBar::new(image.height as u64);
+    let progressbar = ProgressBar::new(image.height() as u64);
     progressbar.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} lines rendered ({eta})")
         .progress_chars("#>-")
     );
 
-    for y in 0..image.height {
+    for y in 0..image.height() {
         progressbar.set_position(y as u64);
-        for x in 0..image.width {
-            let j = image.height - y;
+        for x in 0..image.width() {
+            let j = image.height() - y;
             
             let mut color = Vec3::ZERO;
 
             for _ in 0..samples_per_pixel {
-                let u = (x as f64 + rand::random::<f64>()) / (image.width - 1) as f64;
-                let v = (j as f64 + rand::random::<f64>()) / (image.height - 1) as f64;
+                let u = (x as f64 + rand::random::<f64>()) / (image.width() - 1) as f64;
+                let v = (j as f64 + rand::random::<f64>()) / (image.height() - 1) as f64;
                 let r = camera.get_ray(u, v);
 
                 color += ray_color(&r, &world, MAX_DEPTH);
@@ -147,12 +146,12 @@ fn main() {
             color.y = clamp(0., color.y * scale, 0.9999);
             color.z = clamp(0., color.z * scale, 0.9999);
             
-            image.putpixel(x, y, &gamma2_color_correction(&color));
+            image.putpixel(x, y, gamma2_color_correction(&color).to_color());
         }
     }
     progressbar.finish_with_message("Writing to file...");
 
     let mut out = File::create("image.ppm").expect("Failed to create file");
-    image.write(&mut out).expect("Failed to write to stdout");
+    image.write_image_data(&mut out).expect("Failed to write to stdout");
     println!("Done!");
 }

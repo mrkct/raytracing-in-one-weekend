@@ -1,12 +1,12 @@
 use std::io::{Write, BufWriter};
-use super::vec3::Vec3;
+use crate::image_formats::Image;
 
 
 pub struct PPMImage {
-    pub width: usize, 
-    pub height: usize, 
+    width: usize, 
+    height: usize, 
     max_color_value: usize, 
-    pub data: Vec::<u8>
+    data: Vec::<u8>
 }
 
 impl PPMImage {
@@ -20,20 +20,14 @@ impl PPMImage {
     fn offset(&self, x: usize, y: usize) -> usize {
         3 * (self.width * y + x)
     }
+}
 
-    /*
-        Writes a single pixel on the image. Color is expected to be three 
-        values between 0 and 1 (included)
-    */
-    pub fn putpixel(&mut self, x: usize, y: usize, color: &Vec3) -> bool {
+impl Image for PPMImage {
+    fn putpixel(&mut self, x: usize, y: usize, (r, g, b): (u8, u8, u8)) -> bool {
         let offset = self.offset(x, y);
-        if self.data.len() <= offset { return false; }
-        
-        let (r, g, b) = (
-            (255.999 * color.x) as u8, 
-            (255.999 * color.y) as u8, 
-            (255.999 * color.z) as u8
-        );
+        if self.data.len() <= offset { 
+            return false;
+        }
 
         self.data[offset] = r;
         self.data[offset+1] = g;
@@ -41,7 +35,7 @@ impl PPMImage {
         true
     }
 
-    pub fn write(&self, out: &mut impl Write) -> Result<usize, std::io::Error> {
+    fn write_image_data(&self, out: &mut impl Write) -> Result<usize, std::io::Error> {
         let mut stream = BufWriter::new(out);
 
         let mut written_bytes = 0;
@@ -74,4 +68,7 @@ impl PPMImage {
 
         Ok(written_bytes)
     }
+
+    fn height(&self) -> usize { self.height }
+    fn width(&self) -> usize { self.width }
 }

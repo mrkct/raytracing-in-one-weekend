@@ -139,14 +139,6 @@ impl Vec3 {
             z: a.x * b.y - a.y * b.x,
         };
 	}
-	
-	fn random() -> Vec3 {
-		Vec3::new(
-			rand::random(), 
-			rand::random(), 
-			rand::random()
-		)
-	}
 
 	fn random_range(min: f64, max: f64) -> Vec3 {
 		let rand_range = || (min + rand::random::<f64>() * (max - min));
@@ -170,6 +162,14 @@ impl Vec3 {
   pub fn near_zero(&self) -> bool {
 		const MARGIN: f64 = 1e-8;
 		self.x.abs() < MARGIN && self.y.abs() < MARGIN && self.z.abs() < MARGIN
+  }
+
+  pub fn to_color(&self) -> (u8, u8, u8) {
+    (
+      (255.999 * self.x) as u8, 
+      (255.999 * self.y) as u8, 
+      (255.999 * self.z) as u8
+    )
   }
 }
 
