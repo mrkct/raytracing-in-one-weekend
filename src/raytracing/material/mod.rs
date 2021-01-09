@@ -1,8 +1,18 @@
-pub mod lambertian;
-pub mod metal;
-pub mod dielectric;
+mod lambertian;
+mod metal;
+mod dielectric;
 
-use crate::{vec3::Vec3, ray::Ray, hittable::HitRecord};
+use crate::vec3::Vec3;
+use crate::raytracing::{
+    hittable::HitRecord, 
+    ray::Ray
+};
+
+pub use {
+    lambertian::Lambertian, 
+    metal::Metal, 
+    dielectric::Dielectric
+};
 
 
 pub trait Material {

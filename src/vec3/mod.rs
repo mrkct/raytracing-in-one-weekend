@@ -1,7 +1,6 @@
 /**
     From: https://github.com/ryankaplan/vec3
 */
-
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Debug, Copy, Clone)]
@@ -138,39 +137,39 @@ impl Vec3 {
             y: a.z * b.x - a.x * b.z,
             z: a.x * b.y - a.y * b.x,
         };
-	}
+    }
 
-	fn random_range(min: f64, max: f64) -> Vec3 {
-		let rand_range = || (min + rand::random::<f64>() * (max - min));
-		Vec3::new(
-			rand_range(), rand_range(), rand_range()
-		)
-	}
+    fn random_range(min: f64, max: f64) -> Vec3 {
+        let rand_range = || (min + rand::random::<f64>() * (max - min));
+        Vec3::new(rand_range(), rand_range(), rand_range())
+    }
 
-	pub fn random_in_unit_sphere() -> Vec3 {
-		// TODO: Actual smart random gen
-		loop {
-			let v = Vec3::random_range(-1., 1.);
-			if v.length_squared() < 1. { return v }
-		}
-	}
+    pub fn random_in_unit_sphere() -> Vec3 {
+        // TODO: Actual smart random gen
+        loop {
+            let v = Vec3::random_range(-1., 1.);
+            if v.length_squared() < 1. {
+                return v;
+            }
+        }
+    }
 
-	pub fn random_unit_vector() -> Vec3 {
-		Vec3::random_in_unit_sphere().unit_vector()
-	}
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3::random_in_unit_sphere().unit_vector()
+    }
 
-  pub fn near_zero(&self) -> bool {
-		const MARGIN: f64 = 1e-8;
-		self.x.abs() < MARGIN && self.y.abs() < MARGIN && self.z.abs() < MARGIN
-  }
+    pub fn near_zero(&self) -> bool {
+        const MARGIN: f64 = 1e-8;
+        self.x.abs() < MARGIN && self.y.abs() < MARGIN && self.z.abs() < MARGIN
+    }
 
-  pub fn to_color(&self) -> (u8, u8, u8) {
-    (
-      (255.999 * self.x) as u8, 
-      (255.999 * self.y) as u8, 
-      (255.999 * self.z) as u8
-    )
-  }
+    pub fn to_color(&self) -> (u8, u8, u8) {
+        (
+            (255.999 * self.x) as u8,
+            (255.999 * self.y) as u8,
+            (255.999 * self.z) as u8,
+        )
+    }
 }
 
 // This macro helps us implement math operators on Vector3
@@ -363,12 +362,12 @@ impl_op_assign!(Vec3 DivAssign div_assign /);
 mod tests {
     use super::*;
 
-	#[test]
-	fn random_in_unit_sphere() {
-		for _ in 0..100 {
-			assert!(Vec3::random_in_unit_sphere().length_squared() < 1.);
-		}
-	}
+    #[test]
+    fn random_in_unit_sphere() {
+        for _ in 0..100 {
+            assert!(Vec3::random_in_unit_sphere().length_squared() < 1.);
+        }
+    }
 
     #[test]
     fn add() {
@@ -483,7 +482,10 @@ mod tests {
     #[test]
     fn length() {
         let a = Vec3::new(3.0, 2.0, 1.0);
-        assert_eq!(a.length(), ((3.0 * 3.0 + 2.0 * 2.0 + 1.0 * 1.0) as f64).sqrt());
+        assert_eq!(
+            a.length(),
+            ((3.0 * 3.0 + 2.0 * 2.0 + 1.0 * 1.0) as f64).sqrt()
+        );
 
         let b = Vec3::from_float(0.0);
         assert_eq!(b.length(), 0.0);
@@ -520,7 +522,7 @@ mod tests {
 
     #[test]
     fn with_component() {
-        let mut a = Vec3::new(3.0, 2.0, 1.0);
+        let a = Vec3::new(3.0, 2.0, 1.0);
         assert_eq!(a.with_x(4.0), Vec3::new(4.0, 2.0, 1.0));
         assert_eq!(a.with_y(4.0), Vec3::new(3.0, 4.0, 1.0));
         assert_eq!(a.with_z(4.0), Vec3::new(3.0, 2.0, 4.0));
@@ -528,17 +530,17 @@ mod tests {
 
     #[test]
     fn min() {
-      let tiny_x = Vec3::new(0.00001, 1000.0, 1000.0);
-      let tiny_y = Vec3::new(1000.0, 0.00001, 1000.0);
-      let tiny_z = Vec3::new(1000.0, 1000.0, 0.00001);
-      assert_eq!(tiny_x.min(&tiny_y).min(&tiny_z), Vec3::from_float(0.00001));
+        let tiny_x = Vec3::new(0.00001, 1000.0, 1000.0);
+        let tiny_y = Vec3::new(1000.0, 0.00001, 1000.0);
+        let tiny_z = Vec3::new(1000.0, 1000.0, 0.00001);
+        assert_eq!(tiny_x.min(&tiny_y).min(&tiny_z), Vec3::from_float(0.00001));
     }
 
     #[test]
     fn max() {
-      let big_x = Vec3::new(1000.0, 0.00001, 0.00001);
-      let big_y = Vec3::new(0.00001, 1000.0, 0.00001);
-      let big_z = Vec3::new(0.00001, 0.00001, 1000.0);
-      assert_eq!(big_x.max(&big_y).max(&big_z), Vec3::from_float(1000.0));
+        let big_x = Vec3::new(1000.0, 0.00001, 0.00001);
+        let big_y = Vec3::new(0.00001, 1000.0, 0.00001);
+        let big_z = Vec3::new(0.00001, 0.00001, 1000.0);
+        assert_eq!(big_x.max(&big_y).max(&big_z), Vec3::from_float(1000.0));
     }
 }

@@ -1,5 +1,10 @@
-use super::{Vec3, Ray, Material, HitRecord};
-use crate::material;
+use crate::vec3::Vec3;
+use crate::raytracing::{
+    material::Material,
+    material, 
+    ray::Ray,  
+    hittable::HitRecord
+};
 
 pub struct Dielectric {
     refractive_index: f64

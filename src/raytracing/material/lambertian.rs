@@ -1,5 +1,9 @@
-use crate::{Vec3, Ray, hittable::HitRecord};
-use super::Material;
+use crate::vec3::Vec3;
+use crate::raytracing::{
+    material::Material, 
+    ray::Ray,  
+    hittable::HitRecord
+};
 
 
 pub struct Lambertian {

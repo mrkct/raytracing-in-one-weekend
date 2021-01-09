@@ -1,9 +1,18 @@
-use super::ray::Ray;
-use crate::{vec3::Vec3, material::Material};
+use crate::{
+    vec3::Vec3, 
+    raytracing::{
+        ray::Ray, 
+        Material
+    }
+};
 use std::rc::Rc;
 
 
 pub mod sphere;
+
+pub use {
+    sphere::Sphere
+};
 
 pub struct HitRecord {
     pub p: Vec3, 

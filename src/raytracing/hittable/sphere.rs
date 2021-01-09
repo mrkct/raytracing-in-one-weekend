@@ -1,5 +1,12 @@
-use crate::hittable::{Hittable, HitRecord};
-use crate::{vec3::Vec3, ray::Ray, material::Material};
+use crate::{
+    vec3::Vec3, 
+    raytracing::{
+        Ray, 
+        Hittable, 
+        hittable::HitRecord, 
+        Material
+    }
+};
 use std::rc::Rc;
 
 
