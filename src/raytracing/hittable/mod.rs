@@ -5,7 +5,7 @@ use crate::{
         Material
     }
 };
-use std::rc::Rc;
+use std::sync::Arc;
 
 
 pub mod sphere;
@@ -20,11 +20,11 @@ pub struct HitRecord {
     pub t: f64, 
 
     pub front_face: bool, 
-    pub material: Rc<dyn Material>
+    pub material: Arc<Box<dyn Material + Send + Sync>>
 }
 
 impl HitRecord {
-    pub fn new(material: Rc<dyn Material>, ray: &Ray, root: f64, outward_normal: Vec3) -> HitRecord {
+    pub fn new(material: Arc<Box<dyn Material + Send + Sync>>, ray: &Ray, root: f64, outward_normal: Vec3) -> HitRecord {
         let front_face = Vec3::dot(ray.direction(), &outward_normal) < 0.; 
         HitRecord {
             material, 
@@ -40,7 +40,7 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
-pub fn hits(hittable_objects: &[impl Hittable], ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+pub fn hits(hittable_objects: &Vec<Box<dyn Hittable + Send + Sync>>, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
     let mut closest = t_max;
     let mut hit_record = None;
 

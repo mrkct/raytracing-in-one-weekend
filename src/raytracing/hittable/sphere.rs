@@ -7,18 +7,18 @@ use crate::{
         Material
     }
 };
-use std::rc::Rc;
+use std::sync::Arc;
 
 
 pub struct Sphere {
     center: Vec3, 
     radius: f64, 
 
-    material: Rc<dyn Material>
+    material: Arc<Box<dyn Material + Send + Sync>>
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+    pub fn new(center: Vec3, radius: f64, material: Arc<Box<dyn Material + Send + Sync>>) -> Sphere {
         Sphere {center, radius, material}
     }
 }

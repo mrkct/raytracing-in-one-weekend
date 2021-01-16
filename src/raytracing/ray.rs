@@ -18,7 +18,7 @@ impl Ray {
         self.origin() + t * self.direction()
     }
 
-    pub fn ray_color(&self, world: &Vec<impl hittable::Hittable>, max_depth: i32) -> Vec3 {
+    pub fn ray_color(&self, world: &Vec<Box<dyn hittable::Hittable + Send + Sync>>, max_depth: i32) -> Vec3 {
         if max_depth <= 0 { return Vec3::ZERO; }
     
         if let Some(hit_record) = hittable::hits(world, self, 0.001, std::f64::INFINITY) {
